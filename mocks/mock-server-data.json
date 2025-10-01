@@ -1,0 +1,68 @@
+{
+  "api": {
+    "titles": [
+      "Уютная студия в центре Парижа",
+      "Лофт в Берлине с террасой",
+      "Апартаменты с видом на канал в Амстердаме",
+      "Деревенский домик под Брюгге",
+      "Современная квартира в центре Гамбурга",
+      "Вилла с бассейном в окрестностях Марселя"
+    ],
+    "descriptions": [
+      "Современная студия с панорамным видом на Эйфелеву башню. Идеально подходит для романтического уикенда.",
+      "Просторный лофт в креативном районе Кройцберг. Большие окна, высокие потолки, отдельная терраса.",
+      "Историческое здание на знаменитом канале. Современный интерьер, бесплатный велосипед в подарок!",
+      "Тихий уединённый домик в 15 минутах от центра Брюгге. Сад, камин и домашние завтраки.",
+      "Новая квартира рядом с портом. Минималистичный дизайн, кухня премиум-класса.",
+      "Роскошная вилла с частным бассейном и видом на Средиземное море. Идеальна для большой семьи."
+    ],
+    "cities": [
+      "Paris",
+      "Cologne",
+      "Brussels",
+      "Amsterdam",
+      "Hamburg",
+      "Dusseldorf"
+    ],
+    "previewImages": [
+      "https://example.com/offer-preview1.jpg",
+      "https://example.com/offer-preview2.jpg",
+      "https://example.com/offer-preview3.jpg",
+      "https://example.com/offer-preview4.jpg",
+      "https://example.com/offer-preview5.jpg",
+      "https://example.com/offer-preview6.jpg"
+    ],
+    "images": [
+      "/img/room-01.jpg;/img/room-02.jpg;/img/room-03.jpg;/img/room-04.jpg;/img/room-05.jpg;/img/room-06.jpg",
+      "/img/room-02.jpg;/img/room-03.jpg;/img/room-04.jpg;/img/room-05.jpg;/img/room-06.jpg;/img/room-07.jpg",
+      "/img/room-03.jpg;/img/room-04.jpg;/img/room-05.jpg;/img/room-06.jpg;/img/room-07.jpg;/img/room-08.jpg",
+      "/img/room-04.jpg;/img/room-05.jpg;/img/room-06.jpg;/img/room-07.jpg;/img/room-08.jpg;/img/room-09.jpg",
+      "/img/room-05.jpg;/img/room-06.jpg;/img/room-07.jpg;/img/room-08.jpg;/img/room-09.jpg;/img/room-10.jpg",
+      "/img/room-06.jpg;/img/room-07.jpg;/img/room-08.jpg;/img/room-09.jpg;/img/room-10.jpg;/img/room-11.jpg"
+    ],
+    "authors": [
+      "Анна_Петрова",
+      "Иван_Иванов",
+      "Василий_Веселый",
+      "Торин_Дубощит",
+      "Гэндальф_Серый",
+      "Рома_Юрашов"
+    ],
+    "emails": [
+      "anna.petrova@inbox.local",
+      "ivan.ivanov@post.local",
+      "vasiliy_v@funbox.local",
+      "thorin.oakenshield@middle-earth.local",
+      "gandalf.grey@wizardry.local",
+      "roma.yurashov@citymail.local"
+    ],
+    "avatars": [
+      "anna_petrova.jpg",
+      "ivan_ivanov.jpg",
+      "vasiliy_veselyy.jpg",
+      "thorin.jpg",
+      "gandalf.jpg",
+      "roma_yurashov.jpg"
+    ]
+  }
+}
