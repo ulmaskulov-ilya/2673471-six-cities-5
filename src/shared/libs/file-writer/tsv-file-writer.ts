@@ -18,7 +18,7 @@ export class TSVFileWriter implements FileWriter {
     if (!writeSuccess) {
       return new Promise<unknown>((resolve) => {
         this.stream.once('drain', () => resolve(true));
-      })
+      });
     }
     return Promise.resolve();
   }
