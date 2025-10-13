@@ -2,7 +2,7 @@
 import {Location} from './location.type';
 import {ComfortType} from './comfort-type.enum';
 import {HousingType} from './housing.type';
-import {City} from './city.type';
+import {City} from './city.enum';
 
 
 export type Offer = {

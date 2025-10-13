@@ -1,4 +1,4 @@
-﻿type UserType = 'normal' | 'pro';
+﻿import {UserType} from './user-type.enum';
 
 export type User = {
   name: string,

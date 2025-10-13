@@ -1,46 +1,34 @@
 ﻿import {FileReader} from './file-reader.interface.js';
-import {readFileSync} from 'node:fs';
-import {Offer, User, City, HousingType, Location, ComfortType} from '../../types/index.js';
+import EventEmitter from 'node:events';
+import {createReadStream} from 'node:fs';
 
-export class TSVFileReader implements FileReader {
-  private rawData = '';
 
-  constructor(
-    private readonly filename: string
-  ) {
+const CHUNK_SIZE = 16384;
+
+export class TSVFileReader extends EventEmitter implements FileReader {
+  constructor(private readonly filename: string) {
+    super();
   }
 
-  public read(): void {
-    this.rawData = readFileSync(this.filename, {encoding: 'utf-8'});
-  }
+  public async read(): Promise<void> {
+    const readStream = createReadStream(this.filename, {
+      highWaterMark: CHUNK_SIZE,
+      encoding: 'utf8',
+    });
+    let remainingData = '';
+    let nextLinePosition = -1;
+    let importedRowCount = 0;
 
-  public toArray(): Offer[] {
-    if (!this.rawData) {
-      throw new Error('File was not read');
+    for await (const chunk of readStream) {
+      remainingData += chunk.toString();
+
+      while ((nextLinePosition = remainingData.indexOf('\n')) >= 0) {
+        const completeRow = remainingData.slice(0, nextLinePosition + 1);
+        remainingData = remainingData.slice(++nextLinePosition);
+        importedRowCount++;
+        this.emit('line', completeRow);
+      }
+      this.emit('end', importedRowCount);
     }
-
-    return this.rawData
-      .split('\n')
-      .filter((row) => row.trim().length > 0)
-      .map((line) => line.split('\t'))
-      .map(([title, description, createdDate, city, previewImage, images, isPremium, isFavorite, rating, housingType, rooms, maxGuests, price, comforts, authorName, authorEmail, authorAvatar, password, userType, latitude, longitude]) => ({
-        title,
-        description,
-        postDate: new Date(createdDate),
-        city: city as City,
-        previewImage,
-        images: images.split(';'),
-        isPremium: isPremium === 'true',
-        isFavorite: isFavorite === 'true',
-        rating: parseFloat(rating),
-        housingType: housingType as HousingType,
-        rooms: parseInt(rooms, 10),
-        maxGuests: parseInt(maxGuests, 10),
-        price: parseInt(price, 10),
-        comforts: comforts.split(';').map((comfort) => comfort as ComfortType),
-        author: {name: authorName, email: authorEmail, avatar: authorAvatar, password, userType} as User,
-        commentsCount: 228,
-        location: {latitude: parseFloat(latitude), longitude: parseFloat(longitude)} as Location,
-      }));
   }
 }
