@@ -1,4 +1,4 @@
-﻿import {CommandInterface} from './command.interface';
+﻿import {CommandInterface} from './command.interface.js';
 import {MockServerData} from '../../shared/types/index.js';
 import {TSVOfferGenerator} from '../../shared/libs/offer-generator/index.js';
 import axios from 'axios';

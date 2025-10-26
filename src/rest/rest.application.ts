@@ -2,7 +2,7 @@
 import {Config, RestSchema} from '../shared/libs/config/index.js';
 import {inject, injectable} from 'inversify';
 import {Component} from '../shared/types/index.js';
-import {DatabaseClient} from '../shared/libs/database-client';
+import {DatabaseClient} from '../shared/libs/database-client/index.js';
 import {getMongoUri} from '../shared/helpers/index.js';
 
 @injectable()
@@ -20,7 +20,7 @@ export class RestApplication {
       this.config.get('DB_HOST'),
       this.config.get('DB_PORT'),
       this.config.get('DB_NAME'),
-    )
+    );
     return this.databaseClient.connect(mongoUri);
   }
 

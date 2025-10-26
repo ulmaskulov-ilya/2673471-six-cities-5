@@ -1,8 +1,8 @@
-﻿import {User} from './user.type';
-import {Location} from './location.type';
-import {ComfortType} from './comfort-type.enum';
-import {HousingType} from './housing.type';
-import {City} from './city.enum';
+﻿import {User} from './user.type.js';
+import {Location} from './location.type.js';
+import {ComfortType} from './comfort-type.enum.js';
+import {HousingType} from './housing.type.js';
+import {City} from './city.enum.js';
 
 
 export type Offer = {

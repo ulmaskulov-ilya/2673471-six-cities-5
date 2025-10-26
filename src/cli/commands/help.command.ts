@@ -1,4 +1,4 @@
-﻿import {CommandInterface} from './command.interface';
+﻿import {CommandInterface} from './command.interface.js';
 import chalk from 'chalk';
 
 export class HelpCommand implements CommandInterface {

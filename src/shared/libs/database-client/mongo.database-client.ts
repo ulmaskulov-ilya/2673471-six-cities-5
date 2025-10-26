@@ -1,4 +1,4 @@
-﻿import {DatabaseClient} from './database-client.interface';
+﻿import {DatabaseClient} from './database-client.interface.js';
 import * as Mongoose from 'mongoose';
 import {inject, injectable} from 'inversify';
 import { setTimeout } from 'node:timers/promises';
