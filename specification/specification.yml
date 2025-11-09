@@ -1,0 +1,698 @@
+﻿openapi: 3.1.0
+info:
+  title: API сервер для проекта "Шесть городов"
+  version: "1.0.0"
+  description: |-
+    * Список ресурсов и маршрутов сервера "Шесть городов".
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+tags:
+  - name: users
+    description: Действия с пользователем.
+  - name: offers
+    description: Действия с предложениями.
+  - name: comments
+    description: Действия с комментариями.
+
+paths:
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '409':
+          description: Пользователь с таким email уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Авторизация пользователя
+      description: Авторизует пользователя на основе логина и пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Неправильный логин или пароль
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/logout:
+    post:
+      tags:
+        - users
+      summary: Выход из системы
+      description: Завершение сессии.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Сессия завершена
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Проверка состояния пользователя
+      description: Получение данных текущего авторизованного пользователя.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+
+  /offers:
+    get:
+      tags:
+        - offers
+      summary: Список предложений по аренде
+      description: Возвращает список предложений, по умолчанию 60.
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 60
+          description: Количество предложений для возврата
+      responses:
+        '200':
+          description: Список предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferSummary'
+    post:
+      tags:
+        - offers
+      summary: Создание нового предложения
+      description: Создает новое предложение
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferCreate'
+      responses:
+        '201':
+          description: Предложение успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferBase'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+
+  /offers/{offerId}:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          type: string
+        description: Идентификатор предложения
+    get:
+      tags:
+        - offers
+      summary: Получение детальной информации о предложении
+      description: Возвращает полную информацию по одному предложению.
+      responses:
+        '200':
+          description: Детальная информация о предложении
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferBase'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+    patch:
+      tags:
+        - offers
+      summary: Редактирование предложения
+      description: Обновляет данные предложения.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferCreate'
+      responses:
+        '200':
+          description: Предложение успешно обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferBase'
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Доступ запрещен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения
+      description: Удаляет предложение.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Предложение успешно удалено
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Доступ запрещен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+
+  /offers/{offerId}/comments:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          type: string
+        description: Идентификатор предложения
+    get:
+      tags:
+        - comments
+      summary: Получение списка комментариев
+      description: Возвращает до 50 последних комментариев для предложения.
+      responses:
+        '200':
+          description: Список комментариев
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+                maxItems: 50
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - comments
+      summary: Добавление комментария
+      description: Добавляет новый комментарий к предложению.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewComment'
+      responses:
+        '201':
+          description: Комментарий успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+
+  /offers/premium:
+    get:
+      tags:
+        - offers
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf ]
+      summary: Премиальные предложения для города
+      description: Возвращает до 3 премиальных предложений для указанного города.
+      responses:
+        '200':
+          description: Список премиальных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 3
+                items:
+                  $ref: '#/components/schemas/OfferSummary'
+        '404':
+          description: Город не найден или для него нет предложений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+
+  /favorites:
+    get:
+      tags:
+        - offers
+      summary: Получение списка избранных предложений
+      description: Возвращает все предложения, добавленные пользователем в избранное.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список избранных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferSummary'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+
+  /favorites/{offerId}:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          type: string
+        description: Идентификатор предложения
+    patch:
+      tags:
+        - offers
+      summary: Добавление предложения в избранное
+      description: Добавляет предложение в список избранных.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Предложение успешно добавлено в избранное
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferBase'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения из избранного
+      description: Удаляет предложение из списка избранных.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Предложение успешно удалено из избранного
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferBase'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Предложение не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        details:
+          type: object
+      required:
+        - message
+    UserCreate:
+      type: object
+      required: [name, email, password, userType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          description: Имя пользователя
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          format: uri
+          description: URL изображения .jpg или .png (необязательно)
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+        userType:
+          type: string
+          enum: [normal, pro]
+          description: Тип пользователя (normal|pro)
+    UserPublic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          format: uri
+        userType:
+          type: string
+          enum: [normal, pro]
+      required: [id, name, email, userType]
+    AuthRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Токен доступа (JWT)
+    Coordinates:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+      required: [latitude, longitude]
+    OfferBase:
+      type: object
+      required: [title, description, postDate, city, previewImage, images, isPremium, isFavorite, rating, housingType, rooms, maxGuests, price, comforts, authorId, location]
+      properties:
+        id:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        postDate:
+          type: string
+          format: date-time
+        city:
+          type: string
+          enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+        previewImage:
+          type: string
+          format: uri
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 6
+          maxItems: 6
+          description: Список из 6 ссылок на фотографии
+        isPremium:
+          type: boolean
+        isFavorite:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        housingType:
+          type: string
+          enum: [apartment, house, room, hotel]
+        rooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        maxGuests:
+          type: integer
+          minimum: 1
+          maximum: 10
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        comforts:
+          type: array
+          items:
+            type: string
+            enum: [Breakfast, "Air conditioning", "Laptop friendly workspace", "Baby seat", Washer, Towels, Fridge]
+          minItems: 1
+        authorId:
+          type: string
+          description: Идентификатор автора (user id)
+        commentsCount:
+          type: integer
+          readOnly: true
+        location:
+          $ref: '#/components/schemas/Coordinates'
+    OfferSummary:
+      type: object
+      description: Сокращённая информация о предложении (для списков)
+      properties:
+        id:
+          $ref: '#/components/schemas/OfferBase/properties/id'
+        title:
+          $ref: '#/components/schemas/OfferBase/properties/title'
+        price:
+          $ref: '#/components/schemas/OfferBase/properties/price'
+        housingType:
+          $ref: '#/components/schemas/OfferBase/properties/housingType'
+        isFavorite:
+          $ref: '#/components/schemas/OfferBase/properties/isFavorite'
+        postDate:
+          $ref: '#/components/schemas/OfferBase/properties/postDate'
+        city:
+          $ref: '#/components/schemas/OfferBase/properties/city'
+        previewImage:
+          $ref: '#/components/schemas/OfferBase/properties/previewImage'
+        isPremium:
+          $ref: '#/components/schemas/OfferBase/properties/isPremium'
+        rating:
+          $ref: '#/components/schemas/OfferBase/properties/rating'
+        commentsCount:
+          $ref: '#/components/schemas/OfferBase/properties/commentsCount'
+      required: [id, title, price, housingType, isFavorite, postDate, city, previewImage, isPremium, rating, commentsCount]
+    OfferCreate:
+      type: object
+      required: [title, description, postDate, city, previewImage, images, isPremium, housingType, rooms, maxGuests, price, comforts, authorId, location]
+      properties:
+        title:
+          $ref: '#/components/schemas/OfferBase/properties/title'
+        description:
+          $ref: '#/components/schemas/OfferBase/properties/description'
+        postDate:
+          $ref: '#/components/schemas/OfferBase/properties/postDate'
+        city:
+          $ref: '#/components/schemas/OfferBase/properties/city'
+        previewImage:
+          $ref: '#/components/schemas/OfferBase/properties/previewImage'
+        images:
+          $ref: '#/components/schemas/OfferBase/properties/images'
+        isPremium:
+          $ref: '#/components/schemas/OfferBase/properties/isPremium'
+        housingType:
+          $ref: '#/components/schemas/OfferBase/properties/housingType'
+        rooms:
+          $ref: '#/components/schemas/OfferBase/properties/rooms'
+        maxGuests:
+          $ref: '#/components/schemas/OfferBase/properties/maxGuests'
+        price:
+          $ref: '#/components/schemas/OfferBase/properties/price'
+        comforts:
+          $ref: '#/components/schemas/OfferBase/properties/comforts'
+        authorId:
+          $ref: '#/components/schemas/OfferBase/properties/authorId'
+        location:
+          $ref: '#/components/schemas/Coordinates'
+    Comment:
+      type: object
+      required: [text, postDate, rating, author]
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        createdAt:
+          type: string
+          format: date-time
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        author:
+          $ref: '#/components/schemas/UserPublic'
+    NewComment:
+      type: object
+      required: [text, rating]
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+  responses:
+    Unauthorized:
+      description: Требуется аутентификация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Доступ запрещён
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
