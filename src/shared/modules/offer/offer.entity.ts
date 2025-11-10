@@ -59,7 +59,11 @@ export class OfferEntity extends defaultClasses.TimeStamps {
   @prop({required: true})
   public price: number;
 
-  @prop({required: true})
+  @prop({
+    required: true,
+    type: () => [String],
+    enum: ComfortType,
+  })
   public comforts: ComfortType[];
 
   @prop({
@@ -71,7 +75,16 @@ export class OfferEntity extends defaultClasses.TimeStamps {
   @prop({default: 0})
   public commentsCount: number;
 
-  @prop({required: true})
+  @prop({
+    ref: UserEntity,
+    default: []
+  })
+  public favoriteUserIds?: Ref<UserEntity>[];
+
+  @prop({
+    required: true,
+    type: () => Object
+  })
   public location: Location;
 }
 
