@@ -16,10 +16,10 @@ export interface OfferService {
   findByCount(count?: number): Promise<DocumentType<OfferEntity>[]>;
 
   findPremiumByCity(city: string): Promise<DocumentType<OfferEntity>[]>;
-  findFavourites(userId: string): Promise<DocumentType<OfferEntity>[]>;
+  findFavorites(userId: string): Promise<DocumentType<OfferEntity>[]>;
 
-  addToFavourites(offerId: string, userId: string): Promise<DocumentType<OfferEntity> | null>;
-  removeFromFavourites(offerId: string, userId: string): Promise<DocumentType<OfferEntity> | null>;
+  addToFavorites(offerId: string, userId: string): Promise<DocumentType<OfferEntity> | null>;
+  removeFromFavorites(offerId: string, userId: string): Promise<DocumentType<OfferEntity> | null>;
 
   incCommentCount(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   updateRating(offerId: string, newRating: number): Promise<void>
