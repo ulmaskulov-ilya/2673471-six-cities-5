@@ -11,4 +11,3 @@ export function createCommentContainer(parent: Container) {
 
   return commentContainer;
 }
-

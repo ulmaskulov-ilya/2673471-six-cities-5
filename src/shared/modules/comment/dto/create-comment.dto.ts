@@ -4,4 +4,3 @@
   public authorId: string;
   public offerId: string;
 }
-

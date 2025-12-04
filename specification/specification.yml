@@ -369,7 +369,7 @@ paths:
               schema:
                 $ref: '#/components/responses/notFound'
 
-  /favorites:
+  /offers/favorites:
     get:
       tags:
         - offers
@@ -393,7 +393,7 @@ paths:
               schema:
                 $ref: '#/components/responses/unauthorized'
 
-  /favorites/{offerId}:
+  /offers/favorites/{offerId}:
     parameters:
       - in: path
         name: offerId

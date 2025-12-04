@@ -35,7 +35,7 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 
-  public async findByCount(count?:number): Promise<DocumentType<OfferEntity>[]> {
+  public async findByCount(count?: number): Promise<DocumentType<OfferEntity>[]> {
     return this.offerModel
       .find()
       .sort({postDate: SortType.Down})
@@ -66,7 +66,7 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 
-  public async findFavourites(userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject>[]> {
+  public async findFavorites(userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject>[]> {
     return this.offerModel
       .find({favoriteUserIds: userId})
       .sort({postDate: SortType.Down})
@@ -74,7 +74,7 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 
-  public async addToFavourites(offerId: string, userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject> | null> {
+  public async addToFavorites(offerId: string, userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject> | null> {
     const updated = await this.offerModel
       .findByIdAndUpdate(offerId, {
         $addToSet: {favoriteUserIds: userId},
@@ -92,7 +92,7 @@ export class DefaultOfferService implements OfferService {
     return updated;
   }
 
-  public async removeFromFavourites(offerId: string, userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject> | null> {
+  public async removeFromFavorites(offerId: string, userId: string): Promise<DocumentType<OfferEntity, types.BeAnObject> | null> {
     const updated = await this.offerModel
       .findByIdAndUpdate(offerId, {
         $pull: {favoriteUserIds: userId},

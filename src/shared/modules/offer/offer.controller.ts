@@ -1,0 +1,164 @@
+﻿import {inject, injectable} from 'inversify';
+import {Request, Response} from 'express';
+import {BaseController, HttpError, HttpMethod} from '../../libs/rest/index.js';
+import {Component} from '../../types/index.js';
+import {Logger} from '../../libs/logger/index.js';
+import {OfferRdo, OfferService} from './index.js';
+import {fillDTO} from '../../helpers/index.js';
+import {StatusCodes} from 'http-status-codes';
+import {CreateOfferRequest} from './create-offer-request.type.js';
+import {ParamOfferId} from './param-offerId.type.js';
+import {UpdateOfferRequest} from './update-offer-request.type.js';
+import {OfferDetailRdo} from './rdo/offer-detail.rdo.js';
+
+@injectable()
+export class OfferController extends BaseController {
+  constructor(
+    @inject(Component.Logger) protected readonly logger: Logger,
+    @inject(Component.OfferService) private readonly offerService: OfferService,
+  ) {
+    super(logger);
+    this.logger.info('Register routes for OfferController...');
+    this.addRoute({path: '/', method: HttpMethod.Get, handler: this.index});
+    this.addRoute({path: '/', method: HttpMethod.Post, handler: this.create});
+
+    this.addRoute({path: '/:offerId', method: HttpMethod.Get, handler: this.show});
+    this.addRoute({path: '/:offerId', method: HttpMethod.Patch, handler: this.update});
+    this.addRoute({path: '/:offerId', method: HttpMethod.Delete, handler: this.delete});
+
+    this.addRoute({path: '/premium', method: HttpMethod.Get, handler: this.getPremium});
+    this.addRoute({path: '/favorites', method: HttpMethod.Get, handler: this.getFavorites});
+    this.addRoute({path: '/favorites/:offerId', method: HttpMethod.Patch, handler: this.addFavorite});
+    this.addRoute({path: '/favorites/:offerId', method: HttpMethod.Delete, handler: this.removeFavorite});
+  }
+
+  public async index(_req: Request, res: Response): Promise<void> {
+    const offers = await this.offerService.find();
+    const responseData = fillDTO(OfferRdo, offers);
+    this.ok(res, responseData);
+  }
+
+  public async create(
+    {body}: CreateOfferRequest,
+    res: Response
+  ): Promise<void> {
+    const result = await this.offerService.create(body);
+    this.created(res, fillDTO(OfferRdo, result));
+  }
+
+  public async show(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const {offerId} = req.params as ParamOfferId;
+    const offer = await this.offerService.findById(offerId);
+
+    if (!offer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id «${offerId}» not found.`,
+        'OfferController'
+      );
+    }
+
+    this.ok(res, fillDTO(OfferRdo, offer));
+  }
+
+  public async update(
+    req: UpdateOfferRequest,
+    res: Response,
+  ): Promise<void> {
+    const {offerId} = req.params as ParamOfferId;
+    const {body} = req;
+
+    const updatedOffer = await this.offerService.updateById(offerId, body);
+
+    if (!updatedOffer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id «${offerId}» not found.`,
+        'OfferController'
+      );
+    }
+
+    this.ok(res, fillDTO(OfferRdo, updatedOffer));
+  }
+
+  public async delete(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const {offerId} = req.params as ParamOfferId;
+    const offer = await this.offerService.deleteById(offerId);
+
+    if (!offer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id «${offerId}» not found.`,
+        'OfferController'
+      );
+    }
+
+    this.noContent(res, {});
+  }
+
+  public async getPremium(req: Request, res: Response): Promise<void> {
+    const {city} = req.query;
+
+    if (!city || typeof city !== 'string') {
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        'Query parameter "city" is required and must be a string.',
+        'OfferController'
+      );
+    }
+
+    const premiumOffers = await this.offerService.findPremiumByCity(city);
+
+    if (premiumOffers.length === 0) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `No premium offers found for city «${city}».`,
+        'OfferController'
+      );
+    }
+
+    this.ok(res, fillDTO(OfferRdo, premiumOffers));
+  }
+
+  public async getFavorites(_req: Request, res: Response): Promise<void> {
+    const favoriteOffers = await this.offerService.findFavorites('userId');
+    this.ok(res, fillDTO(OfferRdo, favoriteOffers));
+  }
+
+  public async addFavorite(req: Request, res: Response): Promise<void> {
+    const {offerId} = req.params as ParamOfferId;
+    const updatedOffer = await this.offerService.addToFavorites(offerId, 'userId');
+
+    if (!updatedOffer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id «${offerId}» not found.`,
+        'OfferController'
+      );
+    }
+
+    this.ok(res, fillDTO(OfferDetailRdo, updatedOffer));
+  }
+
+
+  public async removeFavorite(req: Request, res: Response): Promise<void> {
+    const {offerId} = req.params as ParamOfferId;
+    const updatedOffer = await this.offerService.removeFromFavorites(offerId, 'userId');
+
+    if (!updatedOffer) {
+      throw new HttpError(
+        StatusCodes.NOT_FOUND,
+        `Offer with id «${offerId}» not found.`,
+        'OfferController'
+      );
+    }
+
+    this.ok(res, fillDTO(OfferDetailRdo, updatedOffer));
+  }
+}
