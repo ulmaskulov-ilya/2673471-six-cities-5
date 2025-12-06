@@ -9,3 +9,4 @@ export * from './comfort-type.enum.js';
 export * from './mock-server-data.type.js';
 export * from './component.js';
 export * from './sort-type.enum.js';
+export * from './document-exists.interface.js';
