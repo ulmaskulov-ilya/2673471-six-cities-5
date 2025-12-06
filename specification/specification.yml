@@ -88,7 +88,7 @@ paths:
       summary: Выход из системы
       description: Завершение сессии.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '204':
           description: Сессия завершена
@@ -102,7 +102,7 @@ paths:
       summary: Проверка состояния пользователя
       description: Получение данных текущего авторизованного пользователя.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Данные пользователя
@@ -145,7 +145,7 @@ paths:
       summary: Создание нового предложения
       description: Создает новое предложение
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -172,7 +172,7 @@ paths:
               schema:
                 $ref: '#/components/responses/unauthorized'
 
-  /offers/{offerId}:
+  /offers/{offerId}/:
     parameters:
       - in: path
         name: offerId
@@ -204,7 +204,7 @@ paths:
       summary: Редактирование предложения
       description: Обновляет данные предложения.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -248,7 +248,7 @@ paths:
       summary: Удаление предложения
       description: Удаляет предложение.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '204':
           description: Предложение успешно удалено
@@ -300,13 +300,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/notFound'
+
+  /comments/{offerId}:
+    parameters:
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Идентификатор предложения, к которому добавляется комментарий.
+
     post:
       tags:
         - comments
       summary: Добавление комментария
       description: Добавляет новый комментарий к предложению.
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -320,24 +328,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/comment'
-        '400':
-          description: Ошибка валидации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-        '401':
-          description: Не авторизован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/responses/unauthorized'
         '404':
-          description: Предложение не найдено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/responses/notFound'
+          $ref: '#/components/responses/notFound'
 
   /offers/premium:
     get:
@@ -376,7 +368,7 @@ paths:
       summary: Получение списка избранных предложений
       description: Возвращает все предложения, добавленные пользователем в избранное.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Список избранных предложений
@@ -407,7 +399,7 @@ paths:
       summary: Добавление предложения в избранное
       description: Добавляет предложение в список избранных.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Предложение успешно добавлено в избранное
@@ -433,7 +425,7 @@ paths:
       summary: Удаление предложения из избранного
       description: Удаляет предложение из списка избранных.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: Предложение успешно удалено из избранного

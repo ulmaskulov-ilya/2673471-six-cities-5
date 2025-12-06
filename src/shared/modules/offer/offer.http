@@ -1,16 +1,47 @@
 ﻿# Offers
 ## Get list of offers
-GET http://localhost:6000/offers HTTP/1.1
+GET http://localhost:6000/offers/69200d3b792b6714899391c2 HTTP/1.1
 Content-Type: application/json
 
 ###
 
-## Добавить новую категорию
+## Добавить новую offer
 POST http://localhost:6000/offers HTTP/1.1
 Content-Type: application/json
 
 {
-  "title": "69200d3b792b6714899391c6"
+  "id": "69200d3b792b6714899391c2",
+  "title": "Уютная комната в 611 bloke",
+  "price": 10000000000,
+  "housingType": "room",
+  "isFavorite": true,
+  "postDate": "2025-09-01T18:30:00.000Z",
+  "city": "Amsterdam",
+  "maxGuests": 52,
+  "authorId": "69200d3b792b6714899391b2",
+  "rooms": 52,
+  "description": "kurgan52",
+  "previewImage": "/img/room.jpg",
+  "isPremium": true,
+  "rating": 4.6,
+  "commentsCount": 228,
+  "location": {}
 }
+
+###
+
+PATCH http://localhost:6000/offers/69200d3b792b6714899391c2 HTTP/1.1
+Content-Type: application/json
+
+{
+  "price": 6800,
+  "housingType": "room",
+  "isFavorite": false
+}
+
+###
+
+## Список комментариев к объявлению
+GET http://localhost:6000/offers/69200d3b792b6714899391c1/comments HTTP/1.1
 
 ###
