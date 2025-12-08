@@ -4,7 +4,7 @@ import {
   BaseController,
   DocumentExistsMiddleware,
   HttpError,
-  HttpMethod,
+  HttpMethod, PrivateRouteMiddleware,
   ValidateDtoMiddleware,
   ValidateObjectIdMiddleware
 } from '../../libs/rest/index.js';
@@ -33,7 +33,10 @@ export class OfferController extends BaseController {
       path: '/',
       method: HttpMethod.Post,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateOfferDto)]
+      middlewares: [
+        new PrivateRouteMiddleware(),
+        new ValidateDtoMiddleware(CreateOfferDto)
+      ]
     });
 
     this.addRoute({
@@ -50,6 +53,7 @@ export class OfferController extends BaseController {
       method: HttpMethod.Patch,
       handler: this.update,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new ValidateDtoMiddleware(UpdateOfferDto),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
@@ -60,6 +64,7 @@ export class OfferController extends BaseController {
       method: HttpMethod.Delete,
       handler: this.delete,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
       ]
@@ -75,12 +80,18 @@ export class OfferController extends BaseController {
     });
 
     this.addRoute({path: '/premium', method: HttpMethod.Get, handler: this.getPremium});
-    this.addRoute({path: '/favorites', method: HttpMethod.Get, handler: this.getFavorites});
+    this.addRoute({
+      path: '/favorites',
+      method: HttpMethod.Get,
+      handler: this.getFavorites,
+      middlewares: [new PrivateRouteMiddleware()]
+    });
     this.addRoute({
       path: '/favorites/:offerId',
       method: HttpMethod.Patch,
       handler: this.addFavorite,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId'),
       ]
     });
@@ -88,21 +99,37 @@ export class OfferController extends BaseController {
       path: '/favorites/:offerId',
       method: HttpMethod.Delete,
       handler: this.removeFavorite,
-      middlewares: [new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')]
+      middlewares: [
+        new PrivateRouteMiddleware(),
+        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
+      ]
     });
   }
 
-  public async index(_req: Request, res: Response): Promise<void> {
+  private applyFavoriteFlag<T extends { favoriteUserIds?: unknown; isFavorite?: boolean }>(
+    items: T[],
+    userId?: string
+  ): T[] {
+    return items.map((item) => {
+      const favIds = Array.isArray(item.favoriteUserIds) ? item.favoriteUserIds : [];
+      const isFav = !!(userId && favIds.some((id) => String(id) === String(userId)));
+      return { ...item, isFavorite: isFav };
+    });
+  }
+
+  public async index(req: Request, res: Response): Promise<void> {
     const offers = await this.offerService.find();
-    const responseData = fillDTO(OfferRdo, offers);
+    const userId = req.tokenPayload?.id;
+    const prepared = userId ? this.applyFavoriteFlag(offers as any[], userId) : offers.map((o) => ({...o, isFavorite: false}));
+    const responseData = fillDTO(OfferRdo, prepared);
     this.ok(res, responseData);
   }
 
   public async create(
-    {body}: CreateOfferRequest,
+    { body, tokenPayload }: CreateOfferRequest,
     res: Response
   ): Promise<void> {
-    const result = await this.offerService.create(body);
+    const result = await this.offerService.create({ ...body, authorId: tokenPayload.id });
     this.created(res, fillDTO(OfferRdo, result));
   }
 
@@ -111,7 +138,8 @@ export class OfferController extends BaseController {
     res: Response,
   ): Promise<void> {
     const {offerId} = req.params;
-    const offer = await this.offerService.findById(offerId);
+    const userId = req.tokenPayload?.id;
+    const offer = await this.offerService.findById(offerId, userId);
     this.ok(res, fillDTO(OfferRdo, offer));
   }
 
@@ -123,7 +151,9 @@ export class OfferController extends BaseController {
     const {body} = req;
 
     const updatedOffer = await this.offerService.updateById(offerId, body);
-    this.ok(res, fillDTO(OfferRdo, updatedOffer));
+    const userId = req.tokenPayload?.id;
+    const prepared = updatedOffer ? (userId ? this.applyFavoriteFlag([updatedOffer] as any[], userId)[0] : { ...updatedOffer, isFavorite: false }) : null;
+    this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
   public async delete(
@@ -158,24 +188,32 @@ export class OfferController extends BaseController {
       );
     }
 
-    this.ok(res, fillDTO(OfferRdo, premiumOffers));
+    const userId = req.tokenPayload?.id;
+    const prepared = userId ? this.applyFavoriteFlag(premiumOffers as any[], userId) : premiumOffers.map((o) => ({...o, isFavorite: false}));
+    this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
-  public async getFavorites(_req: Request, res: Response): Promise<void> {
-    const favoriteOffers = await this.offerService.findFavorites('userId');
-    this.ok(res, fillDTO(OfferRdo, favoriteOffers));
+  public async getFavorites(req: Request, res: Response): Promise<void> {
+    const userId = req.tokenPayload?.id;
+    const favoriteOffers = await this.offerService.findFavorites(String(userId));
+    const prepared = this.applyFavoriteFlag(favoriteOffers as any[], String(userId));
+    this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
   public async addFavorite(req: Request, res: Response): Promise<void> {
     const {offerId} = req.params as ParamOfferId;
-    const updatedOffer = await this.offerService.addToFavorites(offerId, 'userId');
-    this.ok(res, fillDTO(OfferDetailRdo, updatedOffer));
+    const userId = req.tokenPayload?.id;
+    const updatedOffer = await this.offerService.addToFavorites(offerId, String(userId));
+    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer] as any[], String(userId))[0] : null;
+    this.ok(res, fillDTO(OfferDetailRdo, prepared));
   }
 
   public async removeFavorite(req: Request, res: Response): Promise<void> {
     const {offerId} = req.params as ParamOfferId;
-    const updatedOffer = await this.offerService.removeFromFavorites(offerId, 'userId');
-    this.ok(res, fillDTO(OfferDetailRdo, updatedOffer));
+    const userId = req.tokenPayload?.id;
+    const updatedOffer = await this.offerService.removeFromFavorites(offerId, String(userId));
+    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer] as any[], String(userId))[0] : null;
+    this.ok(res, fillDTO(OfferDetailRdo, prepared));
   }
 
   public async getComments({params}: Request<ParamOfferId>, res: Response): Promise<void> {

@@ -7,3 +7,5 @@ export * from './dto/update-user.dto.js';
 export * from './user.controller.js';
 export * from './rdo/user.rdo.js';
 export * from './dto/create-user.messages.js';
+export * from './dto/login-user.dto.js';
+export * from './dto/update-user.dto.js';

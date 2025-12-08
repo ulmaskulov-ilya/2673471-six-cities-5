@@ -50,6 +50,26 @@ paths:
                 $ref: '#/components/schemas/error'
 
   /users/login:
+    get:
+      tags:
+        - users
+      summary: Проверка состояния пользователя
+      description: Получение данных текущего авторизованного пользователя.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/unauthorized'
     post:
       tags:
         - users
@@ -94,28 +114,6 @@ paths:
           description: Сессия завершена
         '401':
           $ref: '#/components/responses/unauthorized'
-
-  /users/me:
-    get:
-      tags:
-        - users
-      summary: Проверка состояния пользователя
-      description: Получение данных текущего авторизованного пользователя.
-      security:
-        - bearerAuth: [ ]
-      responses:
-        '200':
-          description: Данные пользователя
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user'
-        '401':
-          description: Не авторизован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/responses/unauthorized'
 
   /offers:
     get:

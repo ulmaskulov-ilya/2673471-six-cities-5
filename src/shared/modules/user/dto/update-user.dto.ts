@@ -1,9 +1,9 @@
-﻿import {IsOptional, IsUrl, Length} from 'class-validator';
+﻿import {IsOptional, IsString, Length} from 'class-validator';
 import {UpdateUserValidationMessage} from './update-user.messages.js';
 
 export class UpdateUserDto {
   @IsOptional()
-  @IsUrl()
+  @IsString()
   public avatar?: string;
 
   @IsOptional()

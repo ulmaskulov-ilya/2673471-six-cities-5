@@ -13,7 +13,7 @@ export interface OfferService extends DocumentExists{
 
 
   find(): Promise<DocumentType<OfferEntity>[]>;
-  findById(id: string): Promise<DocumentType<OfferEntity> | null>;
+  findById(offerId: string, userId?: string): Promise<DocumentType<OfferEntity> | null>;
   findByCount(count?: number): Promise<DocumentType<OfferEntity>[]>;
 
   findPremiumByCity(city: string): Promise<DocumentType<OfferEntity>[]>;
